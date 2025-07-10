@@ -589,6 +589,10 @@
                 <div class="split-btn" onclick="splitText(0)">不切分</div>
             </div>
             <div id="splitStatus" class="status" style="display: none;"></div>
+            <div id="segmentsDisplay" style="display: none;">
+                <h3 style="margin-top: 20px; color: #333;">📋 分割后的段落</h3>
+                <div id="segmentsList"></div>
+            </div>
         </div>
         
         <!-- 第三部分：Prompt控制 -->
@@ -916,6 +920,19 @@
             } else {
                 statusDiv.style.display = 'none';
             }
+
+            // 添加显示段落和复制按钮的代码
+            if (text.trim()) {
+                displaySegments(); // 新增这行
+                if (chunkSize === 0) {
+                    statusDiv.innerHTML = `📄 文本保持完整，<strong>不进行分割</strong>，可直接进行GPT处理`;
+                } else {
+                    statusDiv.innerHTML = `📊 文本已分割为 <strong>${textSegments.length}</strong> 段，每段约 <strong>${chunkSize.toLocaleString()}</strong> 字符`;
+                }
+            } else {
+                document.getElementById('segmentsDisplay').style.display = 'none'; // 新增这行
+                statusDiv.style.display = 'none';
+            }
         }
         
         // 设置预设Prompt
@@ -1133,6 +1150,84 @@
                 if (isProcessing) {
                     stopProcessing();
                 }
+            }
+        }
+        // 显示所有段落
+        function displaySegments() {
+            const segmentsDisplay = document.getElementById('segmentsDisplay');
+            const segmentsList = document.getElementById('segmentsList');
+            
+            if (textSegments.length === 0) {
+                segmentsDisplay.style.display = 'none';
+                return;
+            }
+            
+            segmentsDisplay.style.display = 'block';
+            segmentsList.innerHTML = '';
+            
+            textSegments.forEach((segment, index) => {
+                const segmentDiv = document.createElement('div');
+                segmentDiv.style.cssText = `
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                    overflow: hidden;
+                `;
+                
+                segmentDiv.innerHTML = `
+                    <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; color: #333;">第 ${index + 1} 段 (${segment.length} 字符)</span>
+                        <button class="btn btn-success" style="padding: 5px 15px; font-size: 12px;" onclick="copySegment(${index})">📋 复制</button>
+                    </div>
+                    <div style="padding: 15px; max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4; background: white;">
+                        ${segment.substring(0, 500)}${segment.length > 500 ? '...' : ''}
+                    </div>
+                `;
+                
+                segmentsList.appendChild(segmentDiv);
+            });
+        }
+
+        // 复制指定段落
+        function copySegment(index) {
+            if (index >= 0 && index < textSegments.length) {
+                const text = textSegments[index];
+                
+                // 方法1：尝试使用现代剪贴板API
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(() => {
+                    }).catch(err => {
+                        console.log('剪贴板API失败，尝试备用方法');
+                        fallbackCopyMethod(text, event.target);
+                    });
+                } else {
+                    // 方法2：使用备用复制方法
+                    fallbackCopyMethod(text, event.target);
+                }
+            }
+        }
+        // 备用复制方法
+        function fallbackCopyMethod(text, button) {
+            try {
+                // 创建临时文本区域
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                
+                // 选择文本
+                textArea.focus();
+                textArea.select();
+                
+                // 执行复制
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+            } catch (err) {
+                console.error('备用复制方法也失败:', err);
+                showCopyError(button);
             }
         }
     </script>
