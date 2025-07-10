@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📒✨ 小b课程整理工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .textarea {
+            width: 100%;
+            min-height: 200px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        .textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .split-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .split-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .split-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .split-btn-active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-weight: 600;
+        }
+        
+        .api-config {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .api-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .api-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .memory-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 8px;
+        }
+        
+        .memory-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+        
+        .memory-option label {
+            font-weight: 600;
+            color: #333;
+            cursor: pointer;
+        }
+        
+        .model-selection {
+            margin-bottom: 15px;
+        }
+        
+        .model-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .model-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        .model-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .model-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .info-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 15px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .info-content {
+            padding: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 13px;
+        }
+        
+        .info-value {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .info-description {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+        
+        .price-highlight {
+            background: #e8f5e8;
+            color: #28a745;
+        }
+        
+        .price-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .price-expensive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .result h3 {
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+        
+        .segment-result {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .segment-header {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .segment-content {
+            padding: 15px;
+            line-height: 1.6;
+        }
+        
+        .segment-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        /* 密码验证模态框样式 */
+        .password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .password-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .password-modal h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .password-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .password-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .password-error {
+            color: #dc3545;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        
+        .auth-status {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        /* Markdown样式 */
+        .markdown-content h1 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin: 20px 0 15px 0;
+        }
+        
+        .markdown-content h2 {
+            color: #444;
+            margin: 18px 0 12px 0;
+            padding-left: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .markdown-content h3 {
+            color: #555;
+            margin: 15px 0 10px 0;
+        }
+        
+        .markdown-content strong {
+            color: #667eea;
+            font-weight: 700;
+        }
+        
+        .markdown-content ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        
+        .markdown-content li {
+            margin: 5px 0;
+        }
+        
+        .markdown-content p {
+            margin: 10px 0;
+            line-height: 1.7;
+        }
+        
+        .markdown-content code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid #ddd;
+            margin: 15px 0;
+            padding: 10px 15px;
+            background: #f9f9f9;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📒✨ 小b课程整理工具</h1>
+        </div>
+        
+        <!-- 第一部分：预处理 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="section-number">1</span>
+                文本预处理
+            </h2>
+            <textarea id="inputText" class="textarea" placeholder="请在此输入长文本内容..."></textarea>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="removeNonEnglish()">删除非英文字符</button>
+                <button class="btn btn-secondary" onclick="removeEmptyLines()">删除空行</button>
+            </div>
+        </div>
+        
+        <!-- 第二部分：文本分割 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="section-number">2</span>
+                文本分割
+            </h2>
+            <div class="split-options">
+                <div class="split-btn" onclick="splitText(10000)">10K字符分割</div>
+                <div class="split-btn" onclick="splitText(15000)">15K字符分割</div>
+                <div class="split-btn" onclick="splitText(30000)">30K字符分割</div>
+                <div class="split-btn" onclick="splitText(50000)">50K字符分割</div>
+                <div class="split-btn" onclick="splitText(0)">不切分</div>
+            </div>
+            <div id="splitStatus" class="status" style="display: none;"></div>
+        </div>
+        
+        <!-- 第三部分：Prompt控制 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="section-number">3</span>
+                Prompt控制
+            </h2>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="setPresetPrompt(1)">声乐课程模板</button>
+                <button class="btn btn-success" onclick="setPresetPrompt(2)">会议记录模板</button>
+            </div>
+            <textarea id="promptText" class="textarea" style="min-height: 120px;" placeholder="请输入prompt模板...">我有几段声乐课程的录音转录英文文本，其中可能包含转录错误，也可能缺少上下文（可能只发你其中的一部分），一会发给你。请帮我进行以下操作（你的输出请直接用翻译的中文，除了必要的词汇或概念标注双语）：
+1. 修正明显的转录错误：确保内容通顺且易于理解。
+2. 整理课程内容：根据课程顺序，将信息详细整理出来，不要遗漏任何重要细节。
+3. 标注重点：用加粗或其他markdown方式标记特别重要的信息，以方便我快速找到关键点。
+4. 如果有模糊不清或缺少上下文的部分，请标明"[未听清，可能是XXX]"、"[可能接上节]"等；如有关键的词汇可以同时用括号标注英文。
+5. 如果录音内容中有重复或不重要的信息，可以适当精简，但特别注意保持内容全面，不要遗漏有价值的内容。
+6. 按照我发你的顺序，你需要对每次的回复加上一级标题，例如"第一部分："，每段内的子标题从二级标题开始</textarea>
+        </div>
+        
+        <!-- 第四部分：ChatGPT API调用 -->
+        <div class="section">
+            <h2 class="section-title">
+                <span class="section-number">4</span>
+                ChatGPT API处理
+            </h2>
+            
+            <div class="warning">
+                ⚠️ <strong>使用提醒：</strong><br>
+                • 此功能需要验证密码后才能使用，每次处理完成后需重新验证<br>
+                • <strong>GPT-4o Mini</strong> 推荐用于大批量处理（成本极低）<br>
+                • <strong>GPT-4o</strong> 最佳性价比选择（推荐）<br>
+                • <strong>GPT-4 Turbo</strong> 适合复杂文本分析（高质量）<br>
+                • 默认不切分文本，适合128K以内的内容
+            </div>
+            
+            <div id="authStatus" class="auth-status" style="display: none;">
+                ✅ 验证成功，可以进行一次GPT处理
+            </div>
+            
+            <div class="api-config">
+                <input type="text" id="apiUrl" class="api-input" value="https://api.openai.com/v1/chat/completions" placeholder="API URL">
+                
+                <div class="model-selection">
+                    <label for="modelSelect" class="model-label">选择模型：</label>
+                    <select id="modelSelect" class="model-select" onchange="updateModelInfo()">
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gpt-4o" selected>GPT-4o</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    </select>
+                </div>
+                
+                <div id="modelInfo" class="model-info">
+                    <div class="info-header">📊 模型信息</div>
+                    <div id="modelInfoContent" class="info-content"></div>
+                </div>
+                
+                <div class="memory-option">
+                    <input type="checkbox" id="keepMemory" checked>
+                    <label for="keepMemory">保持对话记忆（推荐开启，各段之间会有上下文连续性）</label>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="processBtn" onclick="processWithChatGPT()">开始处理</button>
+            <button class="btn btn-secondary" id="stopBtn" onclick="stopProcessing()" style="display: none;">停止处理</button>
+            
+            <div id="progressContainer" class="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div id="progressText" class="progress-text">准备开始...</div>
+            </div>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>正在处理中，请稍候...</p>
+            </div>
+            
+            <div id="result" class="result" style="display: none;">
+                <h3>🎉 处理结果</h3>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 密码验证模态框 -->
+    <div id="passwordModal" class="password-modal">
+        <div class="password-modal-content">
+            <h3>🔐 验证密码</h3>
+            <p>请输入密码以获得GPT处理权限：</p>
+            <input type="password" id="passwordInput" class="password-input" placeholder="请输入密码">
+            <div class="password-buttons">
+                <button class="btn btn-primary" onclick="verifyPassword()">确认</button>
+                <button class="btn btn-secondary" onclick="closePasswordModal()">取消</button>
+            </div>
+            <div id="passwordError" class="password-error" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <script>
+        let textSegments = [];
+        let isProcessing = false;
+        let conversationHistory = [];
+        let isAuthenticated = false;
+        
+        const encryptedApiKey = 'c2stcHJvai1NbEo4aVYyQ1lHcEZXcTh0ZE95Q19Pb1c4U19kLVotWF9pLTJTdWRmSjlfbTJMbDZqVFhUYW51aE5lUEFVMzJTOUhHd28yTldjNFQzQmxia0ZKUm5xSjRfMl8xampydmw4RkRiOWxST0YxLTNTeU5peDcyV0k5SlZndTB1ZDYzcjItZkZIRWlEOTJQNXByeFhPc1ZmREpuamRjb0E=';
+        
+        function getApiKey() {
+            return atob(encryptedApiKey);
+        }
+        
+        // 验证密码
+        function verifyPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('passwordError');
+            
+            if (password === '061917') {
+                isAuthenticated = true;
+                closePasswordModal();
+                showAuthStatus();
+                errorDiv.style.display = 'none';
+                // 清空密码框
+                document.getElementById('passwordInput').value = '';
+                // 继续处理
+                performChatGPTProcessing();
+            } else {
+                errorDiv.textContent = '密码错误，请重试';
+                errorDiv.style.display = 'block';
+                // 清空密码框让用户重新输入
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
+        // 显示验证状态
+        function showAuthStatus() {
+            const authStatus = document.getElementById('authStatus');
+            authStatus.style.display = 'block';
+        }
+        
+        // 隐藏验证状态
+        function hideAuthStatus() {
+            const authStatus = document.getElementById('authStatus');
+            authStatus.style.display = 'none';
+        }
+        
+        // 打开密码验证模态框
+        function showPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'flex';
+            // 聚焦到密码输入框
+            setTimeout(() => {
+                document.getElementById('passwordInput').focus();
+            }, 100);
+        }
+        
+        // 关闭密码验证模态框
+        function closePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'none';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').style.display = 'none';
+        }
+        
+        // 监听密码输入框的回车键
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyPassword();
+                }
+            });
+        });
+        
+        // 模型信息数据
+        const modelData = {
+            'gpt-4-turbo': {
+                name: 'GPT-4 Turbo',
+                contextWindow: '128K tokens',
+                inputPrice: '$0.01 / 1K tokens',
+                outputPrice: '$0.03 / 1K tokens',
+                speed: '较快',
+                capability: '优秀',
+                description: '平衡性能与成本，拥有更大的上下文窗口，适合处理长文本，推荐用于课程整理。',
+                priceClass: 'price-warning'
+            },
+            'gpt-4o': {
+                name: 'GPT-4o',
+                contextWindow: '128K tokens',
+                inputPrice: '$0.005 / 1K tokens',
+                outputPrice: '$0.015 / 1K tokens',
+                speed: '快',
+                capability: '优秀',
+                description: '最新旗舰模型，性能优异且成本较低，支持多模态，是目前最推荐的选择。',
+                priceClass: 'price-highlight'
+            },
+            'gpt-4o-mini': {
+                name: 'GPT-4o Mini',
+                contextWindow: '128K tokens',
+                inputPrice: '$0.00015 / 1K tokens',
+                outputPrice: '$0.0006 / 1K tokens',
+                speed: '很快',
+                capability: '良好',
+                description: '性价比极高的轻量级模型，成本最低，适合大批量文本处理。',
+                priceClass: 'price-highlight'
+            }
+        };
+        
+        // 更新模型信息显示
+        function updateModelInfo() {
+            const selectedModel = document.getElementById('modelSelect').value;
+            const modelInfo = modelData[selectedModel];
+            const contentDiv = document.getElementById('modelInfoContent');
+            
+            if (modelInfo) {
+                contentDiv.innerHTML = `
+                    <div class="info-item">
+                        <span class="info-label">模型名称:</span>
+                        <span class="info-value">${modelInfo.name}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">上下文窗口:</span>
+                        <span class="info-value">${modelInfo.contextWindow}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">输入价格:</span>
+                        <span class="info-value ${modelInfo.priceClass}">${modelInfo.inputPrice}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">输出价格:</span>
+                        <span class="info-value ${modelInfo.priceClass}">${modelInfo.outputPrice}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">处理速度:</span>
+                        <span class="info-value">${modelInfo.speed}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">理解能力:</span>
+                        <span class="info-value">${modelInfo.capability}</span>
+                    </div>
+                    <div class="info-description">
+                        💡 ${modelInfo.description}
+                    </div>
+                `;
+            }
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateModelInfo();
+            // 默认设置为不切分并初始化状态
+            splitText(0);
+        });
+        
+        // 删除非英文字符
+        function removeNonEnglish() {
+            const textArea = document.getElementById('inputText');
+            textArea.value = textArea.value.replace(/[^a-zA-Z\s\n\r\t.,!?;:'"()-]/g, '');
+        }
+        
+        // 删除空行
+        function removeEmptyLines() {
+            const textArea = document.getElementById('inputText');
+            textArea.value = textArea.value.replace(/^\s*\n/gm, '');
+        }
+        
+        // 文本分割
+        function splitText(chunkSize) {
+            const text = document.getElementById('inputText').value;
+            
+            // 更新按钮状态
+            const splitBtns = document.querySelectorAll('.split-btn');
+            splitBtns.forEach(btn => btn.classList.remove('split-btn-active'));
+            
+            // 找到对应的按钮并激活
+            if (chunkSize === 0) {
+                document.querySelector('.split-btn:last-child').classList.add('split-btn-active');
+            } else {
+                // 根据chunkSize找到对应按钮
+                const targetBtn = Array.from(splitBtns).find(btn => {
+                    return btn.textContent.includes(chunkSize.toString()) || 
+                           (chunkSize === 10000 && btn.textContent.includes('10K')) ||
+                           (chunkSize === 15000 && btn.textContent.includes('15K')) ||
+                           (chunkSize === 30000 && btn.textContent.includes('30K')) ||
+                           (chunkSize === 50000 && btn.textContent.includes('50K'));
+                });
+                if (targetBtn) {
+                    targetBtn.classList.add('split-btn-active');
+                }
+            }
+            
+            textSegments = [];
+            
+            if (chunkSize === 0) {
+                // 不切分，整个文本作为一段
+                textSegments = [text || ''];
+            } else {
+                // 按指定大小切分
+                let currentPos = 0;
+                
+                while (currentPos < text.length) {
+                    let endPos = Math.min(currentPos + chunkSize, text.length);
+                    let segment = text.slice(currentPos, endPos);
+                    textSegments.push(segment);
+                    currentPos = endPos;
+                }
+                
+                // 处理最后一段（如果小于分割长度的1/5，则合并到前一段）
+                if (textSegments.length > 1) {
+                    const lastSegment = textSegments[textSegments.length - 1];
+                    if (lastSegment.length < chunkSize / 5) {
+                        textSegments[textSegments.length - 2] += lastSegment;
+                        textSegments.pop();
+                    }
+                }
+            }
+            
+            const statusDiv = document.getElementById('splitStatus');
+            statusDiv.style.display = 'block';
+            if (text.trim()) {
+                if (chunkSize === 0) {
+                    statusDiv.innerHTML = `📄 文本保持完整，<strong>不进行分割</strong>，可直接进行GPT处理`;
+                } else {
+                    statusDiv.innerHTML = `📊 文本已分割为 <strong>${textSegments.length}</strong> 段，每段约 <strong>${chunkSize.toLocaleString()}</strong> 字符`;
+                }
+            } else {
+                statusDiv.style.display = 'none';
+            }
+        }
+        
+        // 设置预设Prompt
+        function setPresetPrompt(type) {
+            const promptArea = document.getElementById('promptText');
+            if (type === 1) {
+                promptArea.value = '我有几段声乐课程的录音转录英文文本，其中可能包含转录错误，也可能缺少上下文（可能只发你其中的一部分），一会发给你。请帮我进行以下操作（你的输出请直接用翻译的中文，除了必要的词汇或概念标注双语）：\n1. 修正明显的转录错误：确保内容通顺且易于理解。\n2. 整理课程内容：根据课程顺序，将信息详细整理出来，不要遗漏任何重要细节。\n3. 标注重点：用加粗或其他markdown方式标记特别重要的信息，以方便我快速找到关键点。\n4. 如果有模糊不清或缺少上下文的部分，请标明"[未听清，可能是XXX]"、"[可能接上节]"等；如有关键的词汇可以同时用括号标注英文。\n5. 如果录音内容中有重复或不重要的信息，可以适当精简，但特别注意保持内容全面，不要遗漏有价值的内容。\n6. 按照我发你的顺序，你需要对每次的回复加上一级标题，例如"第一部分："，每段内的子标题从二级标题开始';
+            } else if (type === 2) {
+                promptArea.value = '我有几段会议的录音转录英文文本，其中可能包含转录错误，也可能缺少上下文（可能只发你其中的一部分），一会发给你。请帮我进行以下操作（你的输出请直接用翻译的中文，除了必要的词汇或概念标注双语）：\n1. 修正明显的转录错误：确保内容通顺且易于理解。\n2. 整理会议内容：根据会议顺序，将信息详细整理出来，不要遗漏任何重要细节。\n3. 标注重点：用加粗或其他markdown方式标记特别重要的信息，以方便我快速找到关键点。\n4. 如果有模糊不清或缺少上下文的部分，请标明"[未听清，可能是XXX]"、"[可能接上节]"等；如有关键的词汇可以同时用括号标注英文。\n5. 如果录音内容中有重复或不重要的信息，可以适当精简，但特别注意保持内容全面，不要遗漏有价值的内容。\n6. 按照我发你的顺序，你需要对每次的回复加上一级标题，例如"第一部分："，每段内的子标题从二级标题开始';
+            }
+        }
+        
+        // 更新进度条
+        function updateProgress(current, total, message) {
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressContainer.style.display = 'block';
+            const percentage = (current / total) * 100;
+            progressFill.style.width = percentage + '%';
+            progressText.textContent = message || `正在处理第 ${current} 段，共 ${total} 段 (${Math.round(percentage)}%)`;
+        }
+        
+        // 创建段落结果容器
+        function createSegmentResult(index, total) {
+            const resultContent = document.getElementById('resultContent');
+            
+            const segmentDiv = document.createElement('div');
+            segmentDiv.className = 'segment-result';
+            segmentDiv.id = `segment-${index}`;
+            
+            segmentDiv.innerHTML = `
+                <div class="segment-header">
+                    <span>第 ${index + 1} 部分 / 共 ${total} 部分</span>
+                    <span class="segment-status status-processing">处理中</span>
+                </div>
+                <div class="segment-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>正在处理中...</p>
+                    </div>
+                </div>
+            `;
+            
+            resultContent.appendChild(segmentDiv);
+            return segmentDiv;
+        }
+        
+        // 更新段落结果
+        function updateSegmentResult(index, content, isError = false) {
+            const segmentDiv = document.getElementById(`segment-${index}`);
+            if (!segmentDiv) return;
+            
+            const statusElement = segmentDiv.querySelector('.segment-status');
+            const contentElement = segmentDiv.querySelector('.segment-content');
+            
+            if (isError) {
+                statusElement.textContent = '错误';
+                statusElement.className = 'segment-status status-error';
+                contentElement.innerHTML = `<div style="color: #dc3545;">${content}</div>`;
+            } else {
+                statusElement.textContent = '完成';
+                statusElement.className = 'segment-status status-completed';
+                
+                // 渲染Markdown
+                const htmlContent = marked.parse(content);
+                contentElement.innerHTML = `<div class="markdown-content">${htmlContent}</div>`;
+            }
+            
+            // 滚动到当前段落
+            segmentDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // 停止处理
+        function stopProcessing() {
+            isProcessing = false;
+            const processBtn = document.getElementById('processBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const progressContainer = document.getElementById('progressContainer');
+            
+            processBtn.style.display = 'inline-block';
+            processBtn.disabled = false;
+            stopBtn.style.display = 'none';
+            progressContainer.style.display = 'none';
+            
+            // 重置验证状态
+            isAuthenticated = false;
+            hideAuthStatus();
+            
+            updateProgress(0, 1, '处理已停止');
+        }
+        
+        // ChatGPT API调用入口函数
+        function processWithChatGPT() {
+            if (!isAuthenticated) {
+                showPasswordModal();
+                return;
+            }
+            
+            performChatGPTProcessing();
+        }
+        
+        // 执行ChatGPT处理
+        async function performChatGPTProcessing() {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const prompt = document.getElementById('promptText').value;
+            const keepMemory = document.getElementById('keepMemory').checked;
+            const selectedModel = document.getElementById('modelSelect').value;
+            
+            if (!prompt) {
+                alert('请输入Prompt模板');
+                return;
+            }
+            
+            if (textSegments.length === 0 || (textSegments.length === 1 && !textSegments[0].trim())) {
+                alert('请先输入文本内容并进行分割设置');
+                return;
+            }
+            
+            isProcessing = true;
+            const processBtn = document.getElementById('processBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            // 重置UI
+            processBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            resultDiv.style.display = 'block';
+            resultContent.innerHTML = '';
+            conversationHistory = [];
+            
+            // 初始化对话历史
+            if (keepMemory) {
+                conversationHistory.push({ role: 'system', content: prompt });
+            }
+            
+            try {
+                for (let i = 0; i < textSegments.length && isProcessing; i++) {
+                    updateProgress(i + 1, textSegments.length);
+                    
+                    // 创建段落结果容器
+                    const segmentDiv = createSegmentResult(i, textSegments.length);
+                    
+                    const input = textSegments[i];
+                    
+                    // 构建消息数组
+                    let messages;
+                    if (keepMemory) {
+                        // 添加当前段落到对话历史
+                        conversationHistory.push({ role: 'user', content: input });
+                        messages = [...conversationHistory];
+                    } else {
+                        // 独立处理每段
+                        messages = [
+                            { role: 'system', content: prompt },
+                            { role: 'user', content: input }
+                        ];
+                    }
+                    
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${getApiKey()}`
+                            },
+                            body: JSON.stringify({
+                                model: selectedModel,
+                                messages: messages
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        
+                        if (data.choices && data.choices[0] && data.choices[0].message) {
+                            const assistantResponse = data.choices[0].message.content;
+                            
+                            // 如果保持记忆，将助手回复添加到对话历史
+                            if (keepMemory) {
+                                conversationHistory.push({ role: 'assistant', content: assistantResponse });
+                            }
+                            
+                            // 更新段落结果
+                            updateSegmentResult(i, assistantResponse);
+                            
+                        } else {
+                            throw new Error('API响应格式异常');
+                        }
+                        
+                    } catch (error) {
+                        updateSegmentResult(i, `处理出错: ${error.message}`, true);
+                        console.error(`段落 ${i + 1} 处理错误:`, error);
+                    }
+                    
+                    // 添加延迟避免请求过于频繁
+                    if (i < textSegments.length - 1 && isProcessing) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                }
+                
+                if (isProcessing) {
+                    updateProgress(textSegments.length, textSegments.length, '所有段落处理完成！');
+                }
+                
+            } catch (error) {
+                alert('处理出错: ' + error.message);
+                console.error('整体处理错误:', error);
+            } finally {
+                if (isProcessing) {
+                    stopProcessing();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
