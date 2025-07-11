@@ -849,7 +849,8 @@
         // 删除非英文字符
         function removeNonEnglish() {
             const textArea = document.getElementById('inputText');
-            textArea.value = textArea.value.replace(/[^a-zA-Z\s\n\r\t.,!?;:'"()-]/g, '');
+            // 只保留ASCII字符（0-127）
+            textArea.value = textArea.value.replace(/[^\x00-\x7F]/g, '');
         }
         
         // 删除空行
