@@ -604,7 +604,11 @@
             </h2>
             <div class="button-group">
                 <button class="btn btn-success" onclick="setPresetPrompt(1)">声乐课程模板</button>
-                <button class="btn btn-success" onclick="setPresetPrompt(2)">会议记录模板</button>
+                <button class="btn btn-success" onclick="setPresetPrompt(2)">理论课程模板</button>
+                <button class="btn btn-success" onclick="setPresetPrompt(3)">会议记录模板</button>
+                <button class="btn btn-primary" onclick="copyPrompt()">
+                    <i class="fas fa-copy"></i> 复制Prompt
+                </button>
             </div>
             <textarea id="promptText" class="textarea" style="min-height: 120px;" placeholder="请输入prompt模板...">我有几段声乐课程的录音转录英文文本，其中可能包含转录错误，也可能缺少上下文（可能只发你其中的一部分），一会发给你。请帮我进行以下操作（你的输出请直接用翻译的中文，除了必要的词汇或概念标注双语）：
 1. 修正明显的转录错误：确保内容通顺且易于理解。
@@ -615,230 +619,34 @@
 6. 按照我发你的顺序，你需要对每次的回复加上一级标题，例如"第一部分："，每段内的子标题从二级标题开始</textarea>
         </div>
         
-        <!-- 第四部分：ChatGPT API调用 -->
         <div class="section">
             <h2 class="section-title">
                 <span class="section-number">4</span>
-                ChatGPT API处理
+                AI助手链接
             </h2>
             
             <div class="warning">
-                ⚠️ <strong>使用提醒：</strong><br>
-                • 此功能需要验证密码后才能使用，每次处理完成后需重新验证<br>
-                • <strong>GPT-4o Mini</strong> 推荐用于大批量处理（成本极低）<br>
-                • <strong>GPT-4o</strong> 最佳性价比选择（推荐）<br>
-                • <strong>GPT-4 Turbo</strong> 适合复杂文本分析（高质量）<br>
-                • 默认不切分文本，适合128K以内的内容
+                ⚠️ 点击下方按钮打开相应的AI助手，将文本和Prompt复制过去使用
             </div>
             
-            <div id="authStatus" class="auth-status" style="display: none;">
-                ✅ 验证成功，可以进行一次GPT处理
-            </div>
-            
-            <div class="api-config">
-                <input type="text" id="apiUrl" class="api-input" value="https://api.openai.com/v1/chat/completions" placeholder="API URL">
-                
-                <div class="model-selection">
-                    <label for="modelSelect" class="model-label">选择模型：</label>
-                    <select id="modelSelect" class="model-select" onchange="updateModelInfo()">
-                        <option value="gpt-4o-mini" selected>GPT-4o Mini</option>
-                        <option value="gpt-4o">GPT-4o</option>
-                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                    </select>
-                </div>
-                
-                <div id="modelInfo" class="model-info">
-                    <div class="info-header">📊 模型信息</div>
-                    <div id="modelInfoContent" class="info-content"></div>
-                </div>
-                
-                <div class="memory-option">
-                    <input type="checkbox" id="keepMemory" checked>
-                    <label for="keepMemory">保持对话记忆（推荐开启，各段之间会有上下文连续性）</label>
-                </div>
-            </div>
-            
-            <button class="btn btn-primary" id="processBtn" onclick="processWithChatGPT()">开始处理</button>
-            <button class="btn btn-secondary" id="stopBtn" onclick="stopProcessing()" style="display: none;">停止处理</button>
-            
-            <div id="progressContainer" class="progress-container" style="display: none;">
-                <div class="progress-bar">
-                    <div id="progressFill" class="progress-fill"></div>
-                </div>
-                <div id="progressText" class="progress-text">准备开始...</div>
-            </div>
-            
-            <div id="loading" class="loading">
-                <div class="spinner"></div>
-                <p>正在处理中，请稍候...</p>
-            </div>
-            
-            <div id="result" class="result" style="display: none;">
-                <h3>🎉 处理结果</h3>
-                <div id="resultContent"></div>
+            <div class="button-group">
+                <a href="https://claude.ai" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-robot"></i> Claude
+                </a>
+                <a href="https://chat.openai.com" target="_blank" class="btn btn-secondary">
+                    <i class="fas fa-comment"></i> ChatGPT
+                </a>
+                <a href="https://gemini.google.com" target="_blank" class="btn btn-success">
+                    <i class="fas fa-gem"></i> Gemini
+                </a>
             </div>
         </div>
     </div>
     
-    <!-- 密码验证模态框 -->
-    <div id="passwordModal" class="password-modal">
-        <div class="password-modal-content">
-            <h3>🔐 验证密码</h3>
-            <p>请输入密码以获得GPT处理权限：</p>
-            <input type="password" id="passwordInput" class="password-input" placeholder="请输入密码">
-            <div class="password-buttons">
-                <button class="btn btn-primary" onclick="verifyPassword()">确认</button>
-                <button class="btn btn-secondary" onclick="closePasswordModal()">取消</button>
-            </div>
-            <div id="passwordError" class="password-error" style="display: none;"></div>
-        </div>
-    </div>
     
     <script>
         let textSegments = [];
-        let isProcessing = false;
-        let conversationHistory = [];
-        let isAuthenticated = false;
         
-        const encryptedApiKey = 'c2stcHJvai1NbEo4aVYyQ1lHcEZXcTh0ZE95Q19Pb1c4U19kLVotWF9pLTJTdWRmSjlfbTJMbDZqVFhUYW51aE5lUEFVMzJTOUhHd28yTldjNFQzQmxia0ZKUm5xSjRfMl8xampydmw4RkRiOWxST0YxLTNTeU5peDcyV0k5SlZndTB1ZDYzcjItZkZIRWlEOTJQNXByeFhPc1ZmREpuamRjb0E=';
-        
-        function getApiKey() {
-            return atob(encryptedApiKey);
-        }
-        
-        // 验证密码
-        function verifyPassword() {
-            const password = document.getElementById('passwordInput').value;
-            const errorDiv = document.getElementById('passwordError');
-            
-            if (password === '061917') {
-                isAuthenticated = true;
-                closePasswordModal();
-                showAuthStatus();
-                errorDiv.style.display = 'none';
-                // 清空密码框
-                document.getElementById('passwordInput').value = '';
-                // 继续处理
-                performChatGPTProcessing();
-            } else {
-                errorDiv.textContent = '密码错误，请重试';
-                errorDiv.style.display = 'block';
-                // 清空密码框让用户重新输入
-                document.getElementById('passwordInput').value = '';
-            }
-        }
-        
-        // 显示验证状态
-        function showAuthStatus() {
-            const authStatus = document.getElementById('authStatus');
-            authStatus.style.display = 'block';
-        }
-        
-        // 隐藏验证状态
-        function hideAuthStatus() {
-            const authStatus = document.getElementById('authStatus');
-            authStatus.style.display = 'none';
-        }
-        
-        // 打开密码验证模态框
-        function showPasswordModal() {
-            const modal = document.getElementById('passwordModal');
-            modal.style.display = 'flex';
-            // 聚焦到密码输入框
-            setTimeout(() => {
-                document.getElementById('passwordInput').focus();
-            }, 100);
-        }
-        
-        // 关闭密码验证模态框
-        function closePasswordModal() {
-            const modal = document.getElementById('passwordModal');
-            modal.style.display = 'none';
-            document.getElementById('passwordInput').value = '';
-            document.getElementById('passwordError').style.display = 'none';
-        }
-        
-        // 监听密码输入框的回车键
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    verifyPassword();
-                }
-            });
-        });
-        
-        // 模型信息数据
-        const modelData = {
-            'gpt-4-turbo': {
-                name: 'GPT-4 Turbo',
-                contextWindow: '128K tokens',
-                inputPrice: '$0.01 / 1K tokens',
-                outputPrice: '$0.03 / 1K tokens',
-                speed: '较快',
-                capability: '优秀',
-                description: '平衡性能与成本，拥有更大的上下文窗口，适合处理长文本，推荐用于课程整理。',
-                priceClass: 'price-warning'
-            },
-            'gpt-4o': {
-                name: 'GPT-4o',
-                contextWindow: '128K tokens',
-                inputPrice: '$0.005 / 1K tokens',
-                outputPrice: '$0.015 / 1K tokens',
-                speed: '快',
-                capability: '优秀',
-                description: '最新旗舰模型，性能优异且成本较低，支持多模态，是目前最推荐的选择。',
-                priceClass: 'price-highlight'
-            },
-            'gpt-4o-mini': {
-                name: 'GPT-4o Mini',
-                contextWindow: '128K tokens',
-                inputPrice: '$0.00015 / 1K tokens',
-                outputPrice: '$0.0006 / 1K tokens',
-                speed: '很快',
-                capability: '良好',
-                description: '性价比极高的轻量级模型，成本最低，适合大批量文本处理。',
-                priceClass: 'price-highlight'
-            }
-        };
-        
-        // 更新模型信息显示
-        function updateModelInfo() {
-            const selectedModel = document.getElementById('modelSelect').value;
-            const modelInfo = modelData[selectedModel];
-            const contentDiv = document.getElementById('modelInfoContent');
-            
-            if (modelInfo) {
-                contentDiv.innerHTML = `
-                    <div class="info-item">
-                        <span class="info-label">模型名称:</span>
-                        <span class="info-value">${modelInfo.name}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">上下文窗口:</span>
-                        <span class="info-value">${modelInfo.contextWindow}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">输入价格:</span>
-                        <span class="info-value ${modelInfo.priceClass}">${modelInfo.inputPrice}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">输出价格:</span>
-                        <span class="info-value ${modelInfo.priceClass}">${modelInfo.outputPrice}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">处理速度:</span>
-                        <span class="info-value">${modelInfo.speed}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">理解能力:</span>
-                        <span class="info-value">${modelInfo.capability}</span>
-                    </div>
-                    <div class="info-description">
-                        💡 ${modelInfo.description}
-                    </div>
-                `;
-            }
-        }
         
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -943,252 +751,12 @@
             if (type === 1) {
                 promptArea.value = '我有几段声乐课程的录音转录英文文本，其中可能包含转录错误，也可能缺少上下文（可能只发你其中的一部分），一会发给你。请帮我进行以下操作（你的输出请直接用翻译的中文，除了必要的词汇或概念标注双语）：\n1. 修正明显的转录错误：确保内容通顺且易于理解。\n2. 整理课程内容：根据课程顺序，将信息详细整理出来，不要遗漏任何重要细节。\n3. 标注重点：用加粗或其他markdown方式标记特别重要的信息，以方便我快速找到关键点。\n4. 如果有模糊不清或缺少上下文的部分，请标明"[未听清，可能是XXX]"、"[可能接上节]"等；如有关键的词汇可以同时用括号标注英文。\n5. 如果录音内容中有重复或不重要的信息，可以适当精简，但特别注意保持内容全面，不要遗漏有价值的内容。\n6. 按照我发你的顺序，你需要对每次的回复加上一级标题，例如"第一部分："，每段内的子标题从二级标题开始';
             } else if (type === 2) {
+                promptArea.value = '我有几段课程的录音转录英文文本，其中可能包含转录错误，也可能缺少上下文（可能只发你其中的一部分），一会发给你。请帮我进行以下操作（你的输出请直接用翻译的中文或中英混合，但必要的专业词汇或概念标注双语和发音IPA音标，重要的短语和句子均要保留双语，你也可以视情况加上中英混合的注释）：\n1. 修正明显的转录错误：确保内容通顺且易于理解。\n2. 整理课程内容：根据课程顺序，将信息详细整理出来，不要遗漏任何重要细节。\n3. 标注重点：用加粗或其他markdown方式标记特别重要的信息，以方便我快速找到关键点。\n4. 如果有模糊不清或缺少上下文的部分，请标明"[未听清，可能是XXX]"、"[可能接上节]"等；如有关键的词汇可以同时用括号标注英文。\n5. 如果录音内容中有重复或不重要的信息，可以适当精简，但特别注意保持内容全面，不要遗漏有价值的内容。\n6. 按照我发你的顺序，你需要对每次的回复加上一级标题，例如"第一部分："，每段内的子标题从二级标题开始';
+            } else if (type === 3) {
                 promptArea.value = '我有几段会议的录音转录英文文本，其中可能包含转录错误，也可能缺少上下文（可能只发你其中的一部分），一会发给你。请帮我进行以下操作（你的输出请直接用翻译的中文，除了必要的词汇或概念标注双语）：\n1. 修正明显的转录错误：确保内容通顺且易于理解。\n2. 整理会议内容：根据会议顺序，将信息详细整理出来，不要遗漏任何重要细节。\n3. 标注重点：用加粗或其他markdown方式标记特别重要的信息，以方便我快速找到关键点。\n4. 如果有模糊不清或缺少上下文的部分，请标明"[未听清，可能是XXX]"、"[可能接上节]"等；如有关键的词汇可以同时用括号标注英文。\n5. 如果录音内容中有重复或不重要的信息，可以适当精简，但特别注意保持内容全面，不要遗漏有价值的内容。\n6. 按照我发你的顺序，你需要对每次的回复加上一级标题，例如"第一部分："，每段内的子标题从二级标题开始';
             }
         }
         
-        // 更新进度条
-        function updateProgress(current, total, message) {
-            const progressContainer = document.getElementById('progressContainer');
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            
-            progressContainer.style.display = 'block';
-            const percentage = (current / total) * 100;
-            progressFill.style.width = percentage + '%';
-            progressText.textContent = message || `正在处理第 ${current} 段，共 ${total} 段 (${Math.round(percentage)}%)`;
-        }
-        
-        // 创建段落结果容器
-        function createSegmentResult(index, total) {
-            const resultContent = document.getElementById('resultContent');
-            
-            const segmentDiv = document.createElement('div');
-            segmentDiv.className = 'segment-result';
-            segmentDiv.id = `segment-${index}`;
-            
-            segmentDiv.innerHTML = `
-                <div class="segment-header">
-                    <span>第 ${index + 1} 部分 / 共 ${total} 部分</span>
-                    <span class="segment-status status-processing">处理中</span>
-                </div>
-                <div class="segment-content">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>正在处理中...</p>
-                    </div>
-                </div>
-            `;
-            
-            resultContent.appendChild(segmentDiv);
-            return segmentDiv;
-        }
-        
-        // 更新段落结果
-        function updateSegmentResult(index, content, isError = false) {
-            const segmentDiv = document.getElementById(`segment-${index}`);
-            if (!segmentDiv) return;
-            
-            const statusElement = segmentDiv.querySelector('.segment-status');
-            const contentElement = segmentDiv.querySelector('.segment-content');
-            
-            if (isError) {
-                statusElement.textContent = '错误';
-                statusElement.className = 'segment-status status-error';
-                contentElement.innerHTML = `<div style="color: #dc3545;">${content}</div>`;
-            } else {
-                statusElement.textContent = '完成';
-                statusElement.className = 'segment-status status-completed';
-                
-                // 渲染Markdown
-                const htmlContent = marked.parse(content);
-                contentElement.innerHTML = `<div class="markdown-content">${htmlContent}</div>`;
-            }
-            
-            // 滚动到当前段落
-            segmentDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
-        // 停止处理
-        function stopProcessing() {
-            isProcessing = false;
-            const processBtn = document.getElementById('processBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const progressContainer = document.getElementById('progressContainer');
-            
-            processBtn.style.display = 'inline-block';
-            processBtn.disabled = false;
-            stopBtn.style.display = 'none';
-            progressContainer.style.display = 'none';
-            
-            // 重置验证状态
-            isAuthenticated = false;
-            hideAuthStatus();
-            
-            updateProgress(0, 1, '处理已停止');
-        }
-        
-        // ChatGPT API调用入口函数
-        function processWithChatGPT() {
-            if (!isAuthenticated) {
-                showPasswordModal();
-                return;
-            }
-            
-            performChatGPTProcessing();
-        }
-        
-        // 执行ChatGPT处理
-        async function performChatGPTProcessing() {
-            const apiUrl = document.getElementById('apiUrl').value;
-            const prompt = document.getElementById('promptText').value;
-            const keepMemory = document.getElementById('keepMemory').checked;
-            const selectedModel = document.getElementById('modelSelect').value;
-            
-            if (!prompt) {
-                alert('请输入Prompt模板');
-                return;
-            }
-            
-            if (textSegments.length === 0 || (textSegments.length === 1 && !textSegments[0].trim())) {
-                alert('请先输入文本内容并进行分割设置');
-                return;
-            }
-            
-            isProcessing = true;
-            const processBtn = document.getElementById('processBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const resultDiv = document.getElementById('result');
-            const resultContent = document.getElementById('resultContent');
-            
-            // 重置UI
-            processBtn.style.display = 'none';
-            stopBtn.style.display = 'inline-block';
-            resultDiv.style.display = 'block';
-            resultContent.innerHTML = '';
-            conversationHistory = [];
-            
-            // 初始化对话历史
-            if (keepMemory) {
-                conversationHistory.push({ role: 'system', content: prompt });
-            }
-            
-            try {
-                for (let i = 0; i < textSegments.length && isProcessing; i++) {
-                    updateProgress(i + 1, textSegments.length);
-                    
-                    // 创建段落结果容器
-                    const segmentDiv = createSegmentResult(i, textSegments.length);
-                    
-                    const input = textSegments[i];
-                    
-                    // 构建消息数组
-                    let messages;
-                    if (keepMemory) {
-                        // 添加当前段落到对话历史
-                        conversationHistory.push({ role: 'user', content: input });
-                        messages = [...conversationHistory];
-                    } else {
-                        // 独立处理每段
-                        messages = [
-                            { role: 'system', content: prompt },
-                            { role: 'user', content: input }
-                        ];
-                    }
-                    
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${getApiKey()}`
-                            },
-                            body: JSON.stringify({
-                                model: selectedModel,
-                                messages: messages
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
-                        }
-                        
-                        const data = await response.json();
-                        
-                        if (data.choices && data.choices[0] && data.choices[0].message) {
-                            const assistantResponse = data.choices[0].message.content;
-                            
-                            // 如果保持记忆，将助手回复添加到对话历史
-                            if (keepMemory) {
-                                conversationHistory.push({ role: 'assistant', content: assistantResponse });
-                            }
-                            
-                            // 更新段落结果
-                            updateSegmentResult(i, assistantResponse);
-                            
-                        } else {
-                            throw new Error('API响应格式异常');
-                        }
-                        
-                    } catch (error) {
-                        updateSegmentResult(i, `处理出错: ${error.message}`, true);
-                        console.error(`段落 ${i + 1} 处理错误:`, error);
-                    }
-                    
-                    // 添加延迟避免请求过于频繁
-                    if (i < textSegments.length - 1 && isProcessing) {
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                    }
-                }
-                
-                if (isProcessing) {
-                    updateProgress(textSegments.length, textSegments.length, '所有段落处理完成！');
-                }
-                
-            } catch (error) {
-                alert('处理出错: ' + error.message);
-                console.error('整体处理错误:', error);
-            } finally {
-                if (isProcessing) {
-                    stopProcessing();
-                }
-            }
-        }
-        // 显示所有段落
-        function displaySegments() {
-            const segmentsDisplay = document.getElementById('segmentsDisplay');
-            const segmentsList = document.getElementById('segmentsList');
-            
-            if (textSegments.length === 0) {
-                segmentsDisplay.style.display = 'none';
-                return;
-            }
-            
-            segmentsDisplay.style.display = 'block';
-            segmentsList.innerHTML = '';
-            
-            textSegments.forEach((segment, index) => {
-                const segmentDiv = document.createElement('div');
-                segmentDiv.style.cssText = `
-                    border: 1px solid #ddd;
-                    border-radius: 8px;
-                    margin-bottom: 15px;
-                    overflow: hidden;
-                `;
-                
-                segmentDiv.innerHTML = `
-                    <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 600; color: #333;">第 ${index + 1} 段 (${segment.length} 字符)</span>
-                        <button class="btn btn-success" style="padding: 5px 15px; font-size: 12px;" onclick="copySegment(${index})">📋 复制</button>
-                    </div>
-                    <div style="padding: 15px; max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4; background: white;">
-                        ${segment.substring(0, 500)}${segment.length > 500 ? '...' : ''}
-                    </div>
-                `;
-                
-                segmentsList.appendChild(segmentDiv);
-            });
-        }
 
         // 复制指定段落
         function copySegment(index) {
@@ -1231,6 +799,19 @@
                 console.error('备用复制方法也失败:', err);
                 showCopyError(button);
             }
+        }
+        function copyPrompt() {
+            const promptArea = document.getElementById('promptText');
+            promptArea.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✓ 已复制';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
         }
     </script>
 </body>
