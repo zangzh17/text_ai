@@ -745,6 +745,42 @@
             }
         }
         
+        // 显示分割后的段落
+        function displaySegments() {
+            const segmentsDisplay = document.getElementById('segmentsDisplay');
+            const segmentsList = document.getElementById('segmentsList');
+            
+            if (textSegments.length === 0) {
+                segmentsDisplay.style.display = 'none';
+                return;
+            }
+            
+            segmentsDisplay.style.display = 'block';
+            segmentsList.innerHTML = '';
+            
+            textSegments.forEach((segment, index) => {
+                const segmentDiv = document.createElement('div');
+                segmentDiv.style.cssText = `
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    margin-bottom: 15px;
+                    overflow: hidden;
+                `;
+                
+                segmentDiv.innerHTML = `
+                    <div style="background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-weight: 600; color: #333;">第 ${index + 1} 段 (${segment.length} 字符)</span>
+                        <button class="btn btn-success" style="padding: 5px 15px; font-size: 12px;" onclick="copySegment(${index})">📋 复制</button>
+                    </div>
+                    <div style="padding: 15px; max-height: 200px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.4; background: white;">
+                        ${segment.substring(0, 500)}${segment.length > 500 ? '...' : ''}
+                    </div>
+                `;
+                
+                segmentsList.appendChild(segmentDiv);
+            });
+        }
+
         // 设置预设Prompt
         function setPresetPrompt(type) {
             const promptArea = document.getElementById('promptText');
