@@ -56,7 +56,7 @@ echo "✅ 配置文件已创建。"
 
 # --- 3. 下载 Mihomo 内核 (amd64 版本) ---
 echo "正在下载代理内核..."
-BIN_URL="https://github.com/MetaCubeX/mihomo/releases/download/v1.18.3/mihomo-linux-amd64-v1.18.3.gz"
+BIN_URL="https://mirror.ghproxy.com/https://github.com/MetaCubeX/mihomo/releases/download/v1.18.3/mihomo-linux-amd64-v1.18.3.gz"
 curl -L "$BIN_URL" -o "$PROXY_DIR/mihomo.gz"
 gunzip -f "$PROXY_DIR/mihomo.gz"
 chmod +x "$PROXY_DIR/mihomo"
