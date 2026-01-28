@@ -1,12 +1,22 @@
 #!/bin/bash
+# 遇到错误立即停止
+set -e
 
-# --- 1. 定义路径 ---
+# --- 1. 路径与变量定义 ---
 PROXY_DIR="$HOME/.config/mihomo"
 mkdir -p "$PROXY_DIR"
 
-echo "开始安装代理环境..."
+# 这里使用了你提供的确切文件名
+BIN_FILENAME="mihomo-linux-amd64-v1.19.19.gz"
+# 指向你个人仓库的 Raw 链接
+RAW_URL="https://raw.githubusercontent.com/zangzh17/text_ai/main/$BIN_FILENAME"
+# 如果在国内下载慢，可以使用镜像：
+# RAW_URL="https://mirror.ghproxy.com/https://raw.githubusercontent.com/zangzh17/text_ai/main/$BIN_FILENAME"
 
-# --- 2. 写入你的自定义配置文件 (Here Document) ---
+echo "🚀 开始一键配置代理环境..."
+
+# --- 2. 写入配置文件 (config.yaml) ---
+# 注意：请确保此处的密码和节点信息是你最新的
 cat << 'EOF' > "$PROXY_DIR/config.yaml"
 port: 7890
 socks-port: 7891
@@ -31,21 +41,7 @@ proxy-groups:
       - "🇺🇸 My Home Server"
       - "DIRECT"
 
-  - name: "🍎 Apple"
-    type: select
-    proxies:
-      - "DIRECT"
-      - "🇺🇸 My Home Server"
-
 rules:
-  - GEOIP,LAN,DIRECT
-  - DOMAIN-SUFFIX,apple.com,🍎 Apple
-  - DOMAIN-SUFFIX,icloud.com,🍎 Apple
-  - DOMAIN-SUFFIX,google.com,🚀 节点选择
-  - DOMAIN-SUFFIX,youtube.com,🚀 节点选择
-  - DOMAIN-SUFFIX,twitter.com,🚀 节点选择
-  - DOMAIN-SUFFIX,telegram.org,🚀 节点选择
-  - DOMAIN-SUFFIX,netflix.com,🚀 节点选择
   - DOMAIN-SUFFIX,anthropic.com,🚀 节点选择
   - DOMAIN-KEYWORD,openai,🚀 节点选择
   - GEOIP,CN,DIRECT
@@ -54,14 +50,18 @@ EOF
 
 echo "✅ 配置文件已创建。"
 
-# --- 3. 下载 Mihomo 内核 (amd64 版本) ---
-echo "正在下载代理内核..."
-BIN_URL="https://mirror.ghproxy.com/https://github.com/MetaCubeX/mihomo/releases/download/v1.18.3/mihomo-linux-amd64-v1.18.3.gz"
-curl -L "$BIN_URL" -o "$PROXY_DIR/mihomo.gz"
-gunzip -f "$PROXY_DIR/mihomo.gz"
+# --- 3. 下载并处理内核文件 ---
+echo "📥 正在从个人仓库下载内核: $BIN_FILENAME ..."
+curl -L "$RAW_URL" -o "$PROXY_DIR/$BIN_FILENAME"
+
+echo "📦 正在解压并重命名..."
+# 解压
+gunzip -f "$PROXY_DIR/$BIN_FILENAME"
+# 找到解压出的文件并统一命名为 mihomo，方便脚本调用
+mv "$PROXY_DIR/mihomo-linux-amd64-v1.19.19" "$PROXY_DIR/mihomo" 2>/dev/null || true
 chmod +x "$PROXY_DIR/mihomo"
 
-# --- 4. 注入环境变量到 .bashrc ---
+# --- 4. 注入环境变量与快捷函数 ---
 if ! grep -q "proxy_on()" ~/.bashrc; then
     cat << 'EOF' >> ~/.bashrc
 
@@ -70,7 +70,7 @@ proxy_on() {
     export http_proxy="http://127.0.0.1:7890"
     export https_proxy="http://127.0.0.1:7890"
     export ALL_PROXY="socks5://127.0.0.1:7891"
-    echo "✅ 终端代理已开启 (7890/7891)"
+    echo "✅ 终端代理已开启 (127.0.0.1:7890)"
 }
 
 proxy_off() {
@@ -79,7 +79,6 @@ proxy_off() {
 }
 
 proxy_start() {
-    # 检查是否已经在运行
     if pgrep -x "mihomo" > /dev/null; then
         echo "⚠️  Mihomo 已在运行中。"
     else
@@ -91,9 +90,7 @@ EOF
 fi
 
 echo "-------------------------------------------"
-echo "✨ 配置成功完成！"
-echo "1. 执行 'source ~/.bashrc' 使配置生效。"
-echo "2. 执行 'proxy_start' 启动代理引擎。"
-echo "3. 执行 'proxy_on' 开启当前终端代理。"
-echo "4. 现在运行 'claude' 即可畅通无阻。"
+echo "✨ 配置成功！"
+echo "请执行: source ~/.bashrc"
+echo "然后执行: proxy_start && proxy_on"
 echo "-------------------------------------------"
