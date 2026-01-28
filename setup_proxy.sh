@@ -2,7 +2,7 @@
 
 # 配置变量
 PROXY_DIR="$HOME/.config/mihomo"
-CONFIG_URL="你的_CONFIG_YAML_的_RAW_链接" # 替换为你 GitHub 上的原始链接
+CONFIG_URL="https://raw.githubusercontent.com/zangzh17/text_ai/refs/heads/main/setup_proxy.sh" # 替换为你 GitHub 上的原始链接
 BIN_URL="https://github.com/MetaCubeX/mihomo/releases/download/v1.18.3/mihomo-linux-amd64-v1.18.3.gz"
 
 echo "🚀 开始一键配置代理环境..."
